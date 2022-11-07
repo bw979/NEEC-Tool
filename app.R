@@ -80,10 +80,13 @@ compute_Plasma_Rate_pmap <- function(ne, Te_keV, Eres_keV, S_neec_beV, CSin, Zin
   
   #CSD_File <- sprintf("Dependencies/CSD/CSD_fq_Data/CSD_%d.csv", Z)
   #CSD <- read_csv(CSD_File)
-  CSD <- filter(fq_all, Z==Zin)
-  CSD_neTe <- filter(CSD, ne_cm3 == ne_choice, Te_eV == Te_choice)
-  
-  fq <- CSD_neTe$frac[which(CSD_neTe$q==(CSin+1))]
+  if(Zin<80){
+    CSD <- filter(fq_all, Z==Zin)
+    CSD_neTe <- filter(CSD, ne_cm3 == ne_choice, Te_eV == Te_choice)
+    fq <- CSD_neTe$frac[which(CSD_neTe$q==(CSin+1))]
+  } else {
+    fq <- 1
+  }
   RATE <- ne * MB(Eres_keV*1000, 1E3*Te_keV) *  sqrt(1 - (1/((1+(Eres_keV*1000) / me))^2))*100*c   *  S_neec_beV * 1E-24 * (2/(pi)) *  fq
   return(RATE)
 }
@@ -100,7 +103,12 @@ ui <- fluidPage(
   navbarPage("Select:",
              ## tabPanel("name", content)
              tabPanel("Find Transition",
+                      p("Use this tab to find a nuclear transition you want to study. Note that transitions are sorted in decreasing order of the upper-limit plasma rate. You will find this variable towards the right by using the horizontal scroll bar at the bottom."),
+                      p("You should display 100 results per page and click on the transition you are interested in to assist with studying the data. The effective energy is in the far right column and should be taken as a reasonable estimate of the optimum temperature. Note the optimiser on the third tab works well for Z<80 and Te<100keV. More CSD data will be added to improve these limits."),
+                      p("You can use the search bar on the right to search for a specific nuclide, ensure the element is in caps Eg. 178HF. You should search for a specific nuclide to make sense of the different transitions for a nuclide that has many viable NEEC transitions of similar energy (sometimes there are very similar values of the same transitions which come from the raw ENSDF database). Also if your calculation is throwing up a lot of errors in the explore transition tab you should use the search bar to find the corresponding transition in this table - most likely you will find it is a low Ar and not worth considering"),
+                      p("You may sort by any variable by clicking on the tiny arrows next to the variable. Click again or on the other arrow if it sorts in the wrong order."),
                       
+                
                       # sidebarPanel(
                       #   sliderInput(inputId = "energy0",label = "Max Impact Energy (keV)", value = 5000, min = 1, max = 5000)
                       # ),   
@@ -131,7 +139,7 @@ ui <- fluidPage(
                           Then click GO. Once you have generated the data with GO (see the summed rate or yield displayed on the second graph), you can then click OPTIMISE TEMPERATURE. If you have pressed GO or OPTIMISE TEMPERATURE once then you should refresh the app, before choosing a new candidate / change parameters."),
                         p("ne, Te_max and repetition rate are defined by the facility unless 'Astrophysical' input selected; then the calculation should only be run for Rate output only. Rates are always per ion per second. Number output is the NEEC yield per ion in the plasma defined by the laser parameters"),
                         p("Note: can take several minutes to calculate NEEC rates and produce plots. If running Te optimisation will take ~15m, longer for high Z. Once you've clicked OPTIMISE TEMPERATURE just leave it and wait for the loading bar to fill. Have a cup of coffee. The black data on the 3D plot shows the effective energy which is generally the optimal Te for NEEC."),
-                        p("You may see errors displayed on the page, but as long as you see a loading bar and then some plots - error messages can be ignored"),
+                        p("You may see errors displayed on the page, but as long as you see a loading bar and then some plots - error messages can be ignored. If you dont get any plots at all after clicking Go then it is likely the transition rate is too negligible - check this against the data in tab 1."),
                         p("If you want to have a look for a good B value then do that before pressing OPTIMISE TEMPERATURE. B values are not plotted if the OPTIMISE TEMPERATURE is running."),
                         # Choice of input type
                         radioButtons(inputId="In_Type", label="Input type?", 
@@ -149,7 +157,7 @@ ui <- fluidPage(
                         uiOutput("Nuc_Transitions"),
                         uiOutput("Bval"),
                         #numericInput("Bval", "Enter the B-value in Weisskopf Units, if you dont have an idea then look at the Guess Matrix Element Tab", value = 1, min = 0.000000000001, max = 500),
-                        selectInput("Out_Type", "Output Type:", choices=c("Number", "Rate"), selected="Number"),
+                        selectInput("Out_Type", "Output Type:", choices=c("Number", "Rate"), selected="Rate"),
                         #actionButton("goButton", "Go!", class = "btn-success"),
                         uiOutput("Te_Input"),
                         uiOutput("ne_Input"),
@@ -223,9 +231,7 @@ ui <- fluidPage(
 ## SERVER ##########################################################################################
 ####################################################################################################
 server <- function(input, output) {
-  
-  
-  
+
   output$Gammas <- renderPlotly({
     if(M_filter() == 0){
       ND_Gamma1 <- ND_Gamma
@@ -237,7 +243,8 @@ server <- function(input, output) {
       layout(xaxis=list(title="Gamma Energy (keV)", type='log', exponentformat="E"),
              yaxis=list(title="B (Weisskopf Units)", type='log', exponentformat="E"),
              showlegend=T
-      )
+      ) #%>% hovertemplate = paste('<i>AX=</i>: %{y}')
+                                 
     
     #plot_ly(  isomer, x = ~1:length(isomer$M), y = ~input$isomer_energy, type = 'bar')  
     #hist(rnorm(input$isomer_energy))
