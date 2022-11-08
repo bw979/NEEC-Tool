@@ -107,7 +107,7 @@ ui <- fluidPage(
              tabPanel("Find Transition",
                       p("Use this tab to find a nuclear transition you want to study. Note that transitions are sorted in decreasing order of the upper-limit plasma rate. You will find this variable towards the right by using the horizontal scroll bar at the bottom."),
                       p("You should display 100 results per page and click on the transition you are interested in to assist with studying the data. The effective energy is in the far right column and should be taken as a reasonable estimate of the optimum temperature. Note the optimiser on tab 3 works well for Z<80 and Te<100keV. More CSD data will be added to improve these limits."),
-                      p("You can use the search bar on the right to search for a specific nuclide, ensure the element is in caps Eg. 178HF. You should search for a specific nuclide to make sense of the different transitions for a nuclide that has many viable NEEC transitions of similar energy (sometimes there are very similar values of the same transitions which come from the raw ENSDF database). Also if your calculation is throwing up a lot of errors in tab 3 you should use the search bar to find the corresponding transition in this table - most likely you will find it is a low Ar and not worth considering"),
+                      p("You can use the search bar on the right to search for a specific nuclide, ensure the element is in caps Eg. 178HF. You should search for a specific nuclide to make sense of the different transitions for a nuclide that has many viable NEEC transitions of similar energy (sometimes there are very similar values of the same transitions which come from the raw ENSDF database). Also if your calculation is throwing up a lot of errors in tab 3 you should use the search bar on this tab to find the corresponding transition in this table - most likely you will find it is a low Ar and not worth considering"),
                       p("You may sort by any variable by clicking on the tiny arrows next to the variable. Click again or on the other arrow if it sorts in the wrong order."),
                       
                 
@@ -381,7 +381,7 @@ server <- function(input, output) {
   ## INPUT Te directly
   output$Te_Input <- renderUI({
     #sliderInput(inputId = "Te",label = Te_string_max, value = Te_Max, min = 1, max = Te_Max)
-    textInput(inputId = "Te", label = "Enter Electron Temperature (keV)", value = 1000, width = NULL, placeholder = NULL)
+    textInput(inputId = "Te", label = "Enter Electron Temperature (keV)", value = 1, width = NULL, placeholder = NULL)
   })
   
   ## INPUT ne directly
@@ -601,7 +601,7 @@ observeEvent(input$Go, {
              #   showlegend = F)
         
       )  %>%
-      add_lines(x = ~Evals, y = ~MBvals, type = 'scatter', mode = 'lines', marker=list(color="red"), showlegend=T, name="F(E)") 
+      add_lines(x = ~Evals, y = ~MBvals, type = 'scatter', mode = 'lines', lines=list(color="red"), showlegend=T, name="F(E)") 
    
     
     #plot_ly(  isomer, x = ~1:length(isomer$M), y = ~input$isomer_energy, type = 'bar')  
