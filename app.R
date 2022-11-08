@@ -22,7 +22,7 @@ ND_Gamma <- read_csv("Dependencies/ND_Gamma_NEW.csv")
 #Wap <- read.csv(Wins_all_location_save_allOcc)
 Wap_Q0 <- read.csv(Wins_all_location_save_allQ)
 Wap_Q0$Ee_eff <- Wap_Q0$Q - Wap_Q0$Ebind_mean
-Wap_Q <- filter(Wap_Q0, Type != "Large_L", !is.na(Rate_Pl_tot), !is.na(Rate_EBIT_tot), Type_Good==TRUE) %>%
+Wap_Q <- filter(Wap_Q0, Type != "Large_L", !is.na(Rate_Pl_tot), !is.na(Rate_EBIT_tot)) %>%
   arrange(desc(Rate_Pl_tot))
 Wap_Q$Ee_eff <- Wap_Q$Q - Wap_Q$Ebind_mean
 Wap_Q$Jat_mean <- signif(Wap_Q$Jat_mean,4)
@@ -40,7 +40,7 @@ Wap_Q$Ebind_mean <- signif(Wap_Q$Ebind_mean,4)
 
 #WapTable <- select(wap,-Ji_double, -Jf_double, -Thi_numeric, -Thf_numeric, -M, -El, -N, -Egam, -FL) 
 WapTable <- select(Wap_Q,-Ji_double, -Jf_double, -Thi_numeric, -Thf_numeric, -M, -El, -N, -Egam, -FL, -Occ, -At_GS_Config, -subshell, -Jat, -Ebind, -Ee, -Ebeam, -Efeed,
-                   -Btype, -MIX_type, -B2type, -B2, -Sp, -ICC_p) 
+                   -Btype, -MIX_type, -B2type, -B2, -Sp, -ICC_p, -Type_Good) 
 
 #facility <- filter(facility, Facility != c("XFELO", "SACLA", "EurXFEL", "LCLS")) %>%
 facility <-  arrange(facility, Irradiance_Wcm2um2)
@@ -59,6 +59,8 @@ wap <- wap0
 #  filter(Z>9)
 wap_N0 <- filter(wap, Ei==0)
 wap_Ni <- filter(wap, Ei!=0)
+wap_N0_2 <- filter(Wap_Q, Ei==0)
+wap_Ni_2 <- filter(Wap_Q, Ei!=0)
 
 
 ## Maxwell-Boltzman PD function
@@ -80,7 +82,7 @@ compute_Plasma_Rate_pmap <- function(ne, Te_keV, Eres_keV, S_neec_beV, CSin, Zin
   
   #CSD_File <- sprintf("Dependencies/CSD/CSD_fq_Data/CSD_%d.csv", Z)
   #CSD <- read_csv(CSD_File)
-  if(Zin<80){
+  if(Zin<80 && Te_keV <= 100){
     CSD <- filter(fq_all, Z==Zin)
     CSD_neTe <- filter(CSD, ne_cm3 == ne_choice, Te_eV == Te_choice)
     fq <- CSD_neTe$frac[which(CSD_neTe$q==(CSin+1))]
@@ -104,8 +106,8 @@ ui <- fluidPage(
              ## tabPanel("name", content)
              tabPanel("Find Transition",
                       p("Use this tab to find a nuclear transition you want to study. Note that transitions are sorted in decreasing order of the upper-limit plasma rate. You will find this variable towards the right by using the horizontal scroll bar at the bottom."),
-                      p("You should display 100 results per page and click on the transition you are interested in to assist with studying the data. The effective energy is in the far right column and should be taken as a reasonable estimate of the optimum temperature. Note the optimiser on the third tab works well for Z<80 and Te<100keV. More CSD data will be added to improve these limits."),
-                      p("You can use the search bar on the right to search for a specific nuclide, ensure the element is in caps Eg. 178HF. You should search for a specific nuclide to make sense of the different transitions for a nuclide that has many viable NEEC transitions of similar energy (sometimes there are very similar values of the same transitions which come from the raw ENSDF database). Also if your calculation is throwing up a lot of errors in the explore transition tab you should use the search bar to find the corresponding transition in this table - most likely you will find it is a low Ar and not worth considering"),
+                      p("You should display 100 results per page and click on the transition you are interested in to assist with studying the data. The effective energy is in the far right column and should be taken as a reasonable estimate of the optimum temperature. Note the optimiser on tab 3 works well for Z<80 and Te<100keV. More CSD data will be added to improve these limits."),
+                      p("You can use the search bar on the right to search for a specific nuclide, ensure the element is in caps Eg. 178HF. You should search for a specific nuclide to make sense of the different transitions for a nuclide that has many viable NEEC transitions of similar energy (sometimes there are very similar values of the same transitions which come from the raw ENSDF database). Also if your calculation is throwing up a lot of errors in tab 3 you should use the search bar to find the corresponding transition in this table - most likely you will find it is a low Ar and not worth considering"),
                       p("You may sort by any variable by clicking on the tiny arrows next to the variable. Click again or on the other arrow if it sorts in the wrong order."),
                       
                 
@@ -127,7 +129,10 @@ ui <- fluidPage(
                       #)   
              ),
              tabPanel("Guess Matrix Element",
-                      p("Double-Click (rapidly) on a Multipolarity in the legend in order to select just that multipolarity. You may also filter by a specific mass number if you wish"),
+                      p("This tab is to assist you to make a good guess of a reduced transition probability (B-Value) by using all the known B-values in the ENSDF database."),
+                      p("Wait a moment for the plot to load. Double-Click (rapidly) on a Multipolarity in the legend in order to select just that multipolarity. You may also filter by a specific mass number if you wish, in the box below. If there is enough data available upon filtering, then you should look for a B-value that corresponds to a gamma energy of the Q of interest (Q is the nuclear excitation energy)."),
+                      p("Hovering over a point will tell you which nuclide this B-value comes from."),
+                      
                       numericInput("Mass_filter", "Look at a single mass number ('0' means all mass numbers)", value = 0, min = 1, max = 300),  
                       plotlyOutput("Gammas")
              ),
@@ -136,11 +141,13 @@ ui <- fluidPage(
                       tags$head(tags$style(".shiny-notification {position: fixed; top: 10% ;left: 50%}")),
                       sidebarPanel(
                         p("Figure out what it is you need to calculate, set up the correct parameters in the boxes and sliders. 
-                          Then click GO. Once you have generated the data with GO (see the summed rate or yield displayed on the second graph), you can then click OPTIMISE TEMPERATURE. If you have pressed GO or OPTIMISE TEMPERATURE once then you should refresh the app, before choosing a new candidate / change parameters."),
+                          Then click GO. Once you have generated the data with GO (see the summed rate or yield displayed on the second graph), you can then click OPTIMISE TEMPERATURE (button located below the second slider). If you have pressed GO or OPTIMISE TEMPERATURE once then you should refresh the app, before choosing a new candidate / change parameters."),
                         p("ne, Te_max and repetition rate are defined by the facility unless 'Astrophysical' input selected; then the calculation should only be run for Rate output only. Rates are always per ion per second. Number output is the NEEC yield per ion in the plasma defined by the laser parameters"),
-                        p("Note: can take several minutes to calculate NEEC rates and produce plots. If running Te optimisation will take ~15m, longer for high Z. Once you've clicked OPTIMISE TEMPERATURE just leave it and wait for the loading bar to fill. Have a cup of coffee. The black data on the 3D plot shows the effective energy which is generally the optimal Te for NEEC."),
+                        p("Note: can take several minutes to calculate NEEC rates and produce plots. If running Te optimisation will take ~10m, longer for high Z. Once you've clicked OPTIMISE TEMPERATURE just leave it and wait for the loading bar to fill. Have a cup of coffee. The black data on the 3D plot shows the effective energy which is an estimate of the optimal Te for NEEC."),
                         p("You may see errors displayed on the page, but as long as you see a loading bar and then some plots - error messages can be ignored. If you dont get any plots at all after clicking Go then it is likely the transition rate is too negligible - check this against the data in tab 1."),
-                        p("If you want to have a look for a good B value then do that before pressing OPTIMISE TEMPERATURE. B values are not plotted if the OPTIMISE TEMPERATURE is running."),
+                        p("If you want to have a look for a good B-value then do that before pressing OPTIMISE TEMPERATURE. B-values are not plotted if the OPTIMISE TEMPERATURE is running."),
+                        p("WARNING: If you are looking at Te>100keV then you should assess the rates with caution. A rate or yield above this temperature assumes the ion is fully stripped and this may not be necessarily the case for high Z... this would present a several orders of magnitude overestimate, whereas below 100keV the accuracy is well within an order of magnitude. You should also assess with caution candidates where Q>100keV. Always refer to the data you've searched in tab 1 if you are confused."),
+                        
                         # Choice of input type
                         radioButtons(inputId="In_Type", label="Input type?", 
                                      choices=c("Astrophysical","Facility")),
@@ -231,6 +238,27 @@ ui <- fluidPage(
 ## SERVER ##########################################################################################
 ####################################################################################################
 server <- function(input, output) {
+  
+  ### SIDE CHART
+  output$side_chart <- renderPlotly({
+    # if(input$variable == "gs" && input$variable == "iso"){
+    #   wap_filtered <- bind_rows(filter(wap_N0, Ee < Ee_max, AX == input$AX) , filter(wap_Ni, Ee < Ee_max, AX == input$AX) ) 
+    # }
+    # else if(input$variable == "iso"){
+    #   wap_filtered <- filter(wap_Ni, Ee < Ee_max, AX == input$AX)  
+    # }
+    # else if(input$variable == "gs"){
+    #   wap_filtered <- filter(wap_N0, Ee < Ee_max, AX == input$AX)  
+    # }
+    
+    wap_filtered_plot <- filter(wap_Ni_2, AX == input$AX)  
+    
+    # Bar graph showing isomer energies
+    plot_ly(wap_filtered_plot, x =~AX, y =~Ei, type="bar", opacity=1.0, size=4, name=~Thi, title="Initial Energies", text = ~Thi, showlegend=F) %>%
+      layout(
+        yaxis=list(exponentformat='E', title="Isomer Energy / keV")
+      )
+  })
 
   output$Gammas <- renderPlotly({
     if(M_filter() == 0){
@@ -238,7 +266,7 @@ server <- function(input, output) {
     } else {
      ND_Gamma1 <- filter(ND_Gamma, M == M_filter())
     }
-    plot_ly(ND_Gamma1, x =~Egam, y =~B, type="scatter", mode="markers", name=~Mult_Cleaner
+    plot_ly(ND_Gamma1, x =~Egam, y =~B, type="scatter", mode="markers", name=~Mult_Cleaner, text=~AX
             ) %>%
       layout(xaxis=list(title="Gamma Energy (keV)", type='log', exponentformat="E"),
              yaxis=list(title="B (Weisskopf Units)", type='log', exponentformat="E"),
@@ -301,21 +329,21 @@ server <- function(input, output) {
     WapTable <-  filter(WapTable, Ei>0)
     if(input$check_BWE==TRUE){
       WapTable <- filter(WapTable, Ee_eff >= Eei_filter(), Ee_eff <= Eef_filter())
-      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
+      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
       DT::datatable(WapTable2)
     } else {
       WapTable <- filter(WapTable, Ee_eff >= Eei_filter(), Ee_eff <= Eef_filter(), B_WE == FALSE)
-      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
+      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
       DT::datatable(WapTable2)
     }
   } else {
     if(input$check_BWE==TRUE){
       WapTable <- filter(WapTable, Ee_eff >= Eei_filter(), Ee_eff <= Eef_filter())
-      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
+      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
       DT::datatable(WapTable2)
     } else {
       WapTable <- filter(WapTable, Ee_eff >= Eei_filter(), Ee_eff <= Eef_filter(), B_WE == FALSE)
-      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
+      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
       DT::datatable(WapTable2)
     }
   }  
@@ -330,12 +358,12 @@ server <- function(input, output) {
   })
   
   
-  ## B value
+  ## B-value
   output$Bval <- renderUI({
     wapB <- wap_f()
     BValue <- as.double(wapB$B[1])
     #textInput(inputId = "Rfocal_um", label = "Enter Spot Size (um)", value = Rf, width = NULL, placeholder = NULL)
-    numericInput(inputId = "Bval_in", label = "Enter B value", value = BValue)
+    numericInput(inputId = "Bval_in", label = "Enter B-value", value = BValue)
     # BVal_Select <- reactive({
     #      as.double(input$Bval_in) #+ input$Te_fine
     #   })
@@ -573,7 +601,7 @@ observeEvent(input$Go, {
              #   showlegend = F)
         
       )  %>%
-      add_lines(x = ~Evals, y = ~MBvals, type = 'scatter', mode = 'lines', mark=list(color="red"), showlegend=T, name="F(E)") 
+      add_lines(x = ~Evals, y = ~MBvals, type = 'scatter', mode = 'lines', marker=list(color="red"), showlegend=T, name="F(E)") 
    
     
     #plot_ly(  isomer, x = ~1:length(isomer$M), y = ~input$isomer_energy, type = 'bar')  
@@ -590,7 +618,7 @@ observeEvent(input$Go, {
     pr <- paste("Total Number of Excitations:", N_count)
     
     plot_ly(wap_filtered2, x = ~Ee, y = ~Npw_Pl_S, type = 'bar', name =~shell) %>% layout( # , marker=list(color=wap_filtered$shell_colour))
-      yaxis = list(type = "log", exponentformat = "E", title = "Number of NEEC's"), #range = c(1E-10, max(wap_filtered$Npw_Pl_S))),
+      yaxis = list(type = "log", exponentformat = "E", title = "Number of NEEC's (ion^-1)"), #range = c(1E-10, max(wap_filtered$Npw_Pl_S))),
       xaxis = list( title= "Electron Impact Energy  (keV)", range = c(min(wap_filtered2$Ee), max(wap_filtered2$Ee))),
       showlegend = TRUE,
       annotations = list(text = pr, showarrow=FALSE )
@@ -601,8 +629,8 @@ observeEvent(input$Go, {
       pr <- paste("Total RATE:", N_count)
       
       plot_ly(wap_filtered2, x = ~Ee, y = ~Rate_Pl, type = 'bar', name =~shell) %>% layout( # , marker=list(color=wap_filtered$shell_colour))
-        yaxis = list(type = "log", exponentformat = "E", title = "NEEC Rate / s^-1"), #range = c(1E-10, max(wap_filtered$Npw_Pl_S))),
-        xaxis = list( title= "Electron Impact Energy / keV", range = c(min(wap_filtered2$Ee), max(wap_filtered2$Ee))),
+        yaxis = list(type = "log", exponentformat = "E", title = "NEEC Rate  (ion^-1 s^-1)"), #range = c(1E-10, max(wap_filtered$Npw_Pl_S))),
+        xaxis = list( title= "Electron Impact Energy, Ee (keV)", range = c(min(wap_filtered2$Ee), max(wap_filtered2$Ee))),
         showlegend = TRUE,
         annotations = list(text = pr, showarrow=FALSE )
       )
@@ -622,24 +650,7 @@ observeEvent(input$Go, {
     
   })
   
-  ### SIDE CHART
-  output$side_chart <- renderPlotly({
-    if(input$variable == "gs" && input$variable == "iso"){
-      wap_filtered <- bind_rows(filter(wap_N0, Ee < Ee_max, AX == input$AX) , filter(wap_Ni, Ee < Ee_max, AX == input$AX) ) 
-    }
-    else if(input$variable == "iso"){
-      wap_filtered <- filter(wap_Ni, Ee < Ee_max, AX == input$AX)  
-    }
-    else if(input$variable == "gs"){
-      wap_filtered <- filter(wap_N0, Ee < Ee_max, AX == input$AX)  
-    }
-    
-    # Bar graph showing isomer energies
-    plot_ly(wap_filtered, x =~AX, y =~Ei, type="bar", opacity=1.0, size=4, name=~Thi, title="Initial Energies", text = ~Thi) %>%
-      layout(
-        yaxis=list(exponentformat='E', title="Isomer Energy / keV")
-      )
-  })
+  
   
 #}) ### end go button observe event brackets  
 
@@ -740,7 +751,7 @@ observeEvent(input$Optimise, {
     # }  
     ## Run through densities
     #print(xvals[k])
-    withProgress(message = "Working on it - may take 20min ", value = (index/dl), {
+    withProgress(message = "Working on it - may take 15min ", value = (index/dl), {
       for(m in 1:length((yvals))){
         ## Run through resonances
         wap_filtered2$Rate_Pl <- pmap(list(yvals[m], (1E-3*xvals[k]), wap_filtered2$Ee, wap_filtered2$S, wap_filtered2$CS, wap_filtered2$Z), compute_Plasma_Rate_pmap)
@@ -777,7 +788,7 @@ observeEvent(input$Optimise, {
   N_out$Te <- as.double(N_out$Te) / 1000
   N_out$ne <- as.double(N_out$ne)
   N_out$N_count <- as.double(N_out$N_count)
-  N_out <- filter(N_out, N_count > 1E-20, Te < 100)
+  N_out <- filter(N_out, N_count > 1E-20, Te <= 100)
   
   output$Optim_Chart <- renderPlotly({
     ##### Create a Te=Eeff line

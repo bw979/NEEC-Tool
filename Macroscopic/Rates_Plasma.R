@@ -158,7 +158,7 @@ compute_Plasma_Rate <- function(Wins_all, FACIL_bool, facility_in, tau, INPUT_Te
   ##### Read the correct CSD fq file ####
   
   
-  if(Wins_all$Z < 79){
+  if((Wins_all$Z < 79) && ((1E-3*Te_input) <= 100)){
     #### READ THE CORRECT Z_ave ####
     Z_name <- sprintf("Dependencies/CSD/CSD_Ave_Data/Z%003.f_AVE_CS.csv", Wins_all$Z)
     
