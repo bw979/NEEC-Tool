@@ -131,7 +131,7 @@ ui <- fluidPage(
              ),
              tabPanel("Guess Matrix Element",
                       p("This tab is to assist you to make a good guess of a reduced transition probability (B-Value) by using all the known B-values in the ENSDF database."),
-                      p("Wait a moment for the plot to load. Double-Click (rapidly) on a Multipolarity in the legend in order to select just that multipolarity. You may also filter by a specific mass number if you wish, in the box below. If there is enough data available upon filtering, then you should look for a B-value that corresponds to a gamma energy of the Q of interest (Q is the nuclear excitation energy)."),
+                      p("Wait a moment for the plot to load. Double-Click (rapidly) on a multipolarity in the legend in order to select just that multipolarity. You may also filter by a specific mass number if you wish, in the box below. If there is enough data available upon filtering, then you should look for a B-value that corresponds to a gamma energy of the Q of interest (Q is the nuclear excitation energy)."),
                       p("Hovering over a point will tell you which nuclide this B-value comes from."),
                       
                       numericInput("Mass_filter", "Look at a single mass number ('0' means all mass numbers)", value = 0, min = 1, max = 300),  
