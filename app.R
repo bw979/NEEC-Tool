@@ -15,7 +15,12 @@ atomic_colours <- read_csv("Dependencies/Atomic_Colours.csv")
 
 ##### LOAD the corrected submission data - this has B WE's but needs a mixing calculation and maybe a wrangle of mixing typeWins_all_location_save <- "Wap_AllQ_PlasmaEBIT_NoMixing_CorrectedSubmission2022.csv"
 Wins_all_location_save_allQ <- "Wap_AllQ3_PlasmaEBIT_NoMixing_CorrectedSubmission2022.csv"
-Wins_all_location_save_allOcc <- "Wap_AllOcc_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv"
+#Wins_all_location_save_allOcc <- "Wap_AllOcc_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv"
+wap_AllOcc_0_99 <- read_csv("Wap_AllOcc_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
+wap_AllOcc_100_200 <- read_csv("Wap_AllOcc_Ee100_Ee200_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
+
+#wap_AllOcc <- bind_rows(wap_AllOcc_0_99, wap_AllOcc_100_200 )
+
 
 ND_Gamma <- read_csv("Dependencies/ND_Gamma_NEW.csv")
 #ND_Gamma <- filter(ND_Gamma, Mult_Cleaner != "E0")
@@ -47,7 +52,7 @@ facility <-  arrange(facility, Irradiance_Wcm2um2)
 
 #### MAIN DATA TABLES
 #wap0 <- read_csv("App_Data/All_RatesCalcd_Viva.csv")
-wap0 <- read_csv("Wap_AllOcc_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
+wap0 <- bind_rows(wap_AllOcc_0_99, wap_AllOcc_100_200 )
 wap0$Rate_Pl <- wap0$Rate_Pl_tot
 wap0$S <- wap0$Sp*wap0$m
 wap0$Npw_Pl_S <- double(1)
@@ -106,7 +111,7 @@ ui <- fluidPage(
              ## tabPanel("name", content)
              tabPanel("Find Transition",
                       p("Use this tab to find a nuclear transition you want to study. Note that transitions are sorted in decreasing order of the upper-limit plasma rate. You will find this variable towards the right by using the horizontal scroll bar at the bottom."),
-                      p("You should display 100 results per page and click on the transition you are interested in to assist with studying the data. The effective energy is in the far right column and should be taken as a reasonable estimate of the optimum temperature. Note the optimiser on tab 3 works well for Z<80 and Te<100keV. More CSD data will be added to improve these limits."),
+                      p("You should display 100 results per page and click on the transition you are interested in to assist with studying the data. The effective energy is in the far right column and should be taken as a reasonable estimate of the optimum temperature. Note the optimiser on tab 3 works well for Z<80 and Te<100keV. More CSD data will be added to improve these limits. You may find candidates suggested in literature and not on this list - this will be because the lifetime of the upper level is not yet in the ENSDF database - the lifetime must be known for its detectable fraction to be calculated"),
                       p("You can use the search bar on the right to search for a specific nuclide, ensure the element is in caps Eg. 178HF. You should search for a specific nuclide to make sense of the different transitions for a nuclide that has many viable NEEC transitions of similar energy (sometimes there are very similar values of the same transitions which come from the raw ENSDF database). Also if your calculation is throwing up a lot of errors in tab 3 you should use the search bar on this tab to find the corresponding transition in this table - most likely you will find it is a low Ar and not worth considering"),
                       p("You may sort by any variable by clicking on the tiny arrows next to the variable. Click again or on the other arrow if it sorts in the wrong order."),
                       p("Filter by a range of electron impact energies below, and also use the self-explanatory tick boxes"),
@@ -144,6 +149,7 @@ ui <- fluidPage(
                         p("Figure out what it is you need to calculate, set up the correct parameters in the boxes and sliders. 
                           Then click GO. Once you have generated the data with GO (see the summed rate or yield displayed on the second graph), you can then click OPTIMISE TEMPERATURE (button located below the second slider). If you have pressed GO or OPTIMISE TEMPERATURE once then you should refresh the app, before choosing a new candidate / change parameters."),
                         p("ne, Te_max and repetition rate are defined by the facility unless 'Astrophysical' input selected; then the calculation should only be run for Rate output only. Rates are always per ion per second. Number output is the NEEC yield per ion in the plasma defined by the laser parameters"),
+                        p("All plots are interactive. See the tool bar at the top of each plot to assist with studying the data"),
                         p("Note: can take several minutes to calculate NEEC rates and produce plots. If running Te optimisation will take ~10m, longer for high Z. Once you've clicked OPTIMISE TEMPERATURE just leave it and wait for the loading bar to fill. Have a cup of coffee. The black data on the 3D plot shows the effective energy which is an estimate of the optimal Te for NEEC. Click the download button to download a .csv of the ne,Te,Rate data once OPTIMISE TEMPERATURE has run; this will be for astrophysical calculation or to use with your hydrodynamic simulation of small volumes and thus {ne,Te}'s"),
                         p("You may see errors displayed on the page, but as long as you see a loading bar and then some plots - error messages can be ignored. If you dont get any plots at all after clicking Go then it is likely the transition rate is too negligible - check this against the data in tab 1."),
                         p("If you want to have a look for a good B-value then do that before pressing OPTIMISE TEMPERATURE. B-values are not plotted if the OPTIMISE TEMPERATURE is running."),
