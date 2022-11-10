@@ -258,12 +258,13 @@ server <- function(input, output) {
     #   wap_filtered <- filter(wap_N0, Ee < Ee_max, AX == input$AX)  
     # }
     
-    wap_filtered_plot <- filter(wap_Ni_2, AX == input$AX)  
+    wap_filtered_plot <- filter(wap_Ni_2, AX == input$AX)  %>%
+      distinct(Ei, .keep_all = T)
     
     # Bar graph showing isomer energies
-    plot_ly(wap_filtered_plot, x =~AX, y =~Ei, type="bar", opacity=1.0, size=4, name=~Thi, title="Initial Energies", text = ~Thi, showlegend=F) %>%
+    plot_ly(wap_filtered_plot, x =~AX, y =~Ei, type="bar", opacity=1.0, size=4, title="Initial Energies", text = ~Thi, showlegend=F) %>%
       layout(
-        yaxis=list(exponentformat='E', title="Isomer Energy / keV")
+        yaxis=list(exponentformat='E', title="Isomer Energy  (keV)")
       )
   })
 
@@ -336,21 +337,21 @@ server <- function(input, output) {
     WapTable <-  filter(WapTable, Ei>0)
     if(input$check_BWE==TRUE){
       WapTable <- filter(WapTable, Ee_eff >= Eei_filter(), Ee_eff <= Eef_filter())
-      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
+      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean", "S_tot beV"="Stot")
       DT::datatable(WapTable2)
     } else {
       WapTable <- filter(WapTable, Ee_eff >= Eei_filter(), Ee_eff <= Eef_filter(), B_WE == FALSE)
-      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
+      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean", "S_tot beV"="Stot")
       DT::datatable(WapTable2)
     }
   } else {
     if(input$check_BWE==TRUE){
       WapTable <- filter(WapTable, Ee_eff >= Eei_filter(), Ee_eff <= Eef_filter())
-      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
+      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean", "S_tot beV"="Stot")
       DT::datatable(WapTable2)
     } else {
       WapTable <- filter(WapTable, Ee_eff >= Eei_filter(), Ee_eff <= Eef_filter(), B_WE == FALSE)
-      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean")
+      WapTable2 <- rename(WapTable,"Total Decay Width (eV)"="Gamma_Thalf_eV","Electromagnetic Decay Width (eV)"="Gamma_eV","Upper Limit Plasma Rate (/ion/s)"="Rate_Pl_tot","Upper Limit EBIT Rate (1/s)"="Rate_EBIT_tot","Reduced Transition Probability (W.u.)"="B", "T1/2 initial" = "Thi", "T1/2 final" = "Thf","Ei (keV)" = "Ei", "Ef (keV)" = "Ef", "Highest Charge State" = "CS", "Ee Effective (keV)" = "Ee_eff", "Q (keV)" = "Q", "Mean Atomic Binding Energy (keV)" = "Ebind_mean", "Effective Jat" = "Jat_mean", "S_tot beV"="Stot")
       DT::datatable(WapTable2)
     }
   }  
