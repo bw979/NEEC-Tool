@@ -18,6 +18,7 @@ Wins_all_location_save_allQ <- "Wap_AllQ3_PlasmaEBIT_NoMixing_CorrectedSubmissio
 #Wins_all_location_save_allOcc <- "Wap_AllOcc_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv"
 wap_AllOcc_0_99 <- read_csv("Wap_AllOcc_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
 wap_AllOcc_100_200 <- read_csv("Wap_AllOcc_Ee100_Ee200_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
+Wap_AllOcc_Additions <- read_csv("Wap_AllOcc_AdditionalData.csv")
 
 #wap_AllOcc <- bind_rows(wap_AllOcc_0_99, wap_AllOcc_100_200 )
 
@@ -41,6 +42,14 @@ Wap_Q$Rate_Pl_tot <- signif(Wap_Q$Rate_Pl_tot,4)
 Wap_Q$Rate_EBIT_tot <- signif(Wap_Q$Rate_EBIT_tot,4)
 Wap_Q$Ee_eff <- signif(Wap_Q$Ee_eff,4)
 Wap_Q$Ebind_mean <- signif(Wap_Q$Ebind_mean,4)
+Wap_Q$Etot <- signif(Wap_Q$Te_min,4)
+Wap_Q$Te_min <- signif(Wap_Q$Te_min,4)
+Wap_Q$ICC_Vac <- signif(Wap_Q$ICC_Vac,4)
+Wap_Q$S_Vac <- signif(Wap_Q$S_Vac,4)
+Wap_Q$m <- signif(Wap_Q$m,3)
+
+
+
 
 
 #WapTable <- select(wap,-Ji_double, -Jf_double, -Thi_numeric, -Thf_numeric, -M, -El, -N, -Egam, -FL) 
@@ -53,6 +62,7 @@ facility <-  arrange(facility, Irradiance_Wcm2um2)
 #### MAIN DATA TABLES
 #wap0 <- read_csv("App_Data/All_RatesCalcd_Viva.csv")
 wap0 <- bind_rows(wap_AllOcc_0_99, wap_AllOcc_100_200 )
+wap0 <- bind_rows(wap0, Wap_AllOcc_Additions)
 wap0$Rate_Pl <- wap0$Rate_Pl_tot
 wap0$S <- wap0$Sp*wap0$m
 wap0$Npw_Pl_S <- double(1)
