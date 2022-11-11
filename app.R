@@ -18,16 +18,21 @@ Wins_all_location_save_allQ <- "Wap_AllQ3_PlasmaEBIT_NoMixing_CorrectedSubmissio
 #Wins_all_location_save_allOcc <- "Wap_AllOcc_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv"
 wap_AllOcc_0_99 <- read_csv("Wap_AllOcc_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
 wap_AllOcc_100_200 <- read_csv("Wap_AllOcc_Ee100_Ee200_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
+wap_AllOcc_200_300 <- read_csv("Wap_AllOcc_Ee200_Ee300_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
 Wap_AllOcc_Additions <- read_csv("Wap_AllOcc_AdditionalData.csv")
-
-#wap_AllOcc <- bind_rows(wap_AllOcc_0_99, wap_AllOcc_100_200 )
+Wap_AllOcc_Additions <- filter(Wap_AllOcc_Additions, !is.na(Sp))
+Wap_Q_Additions <- arrange(Wap_AllOcc_Additions, M, Z, Occ )
+Wap_Q_Additions <- distinct(Wap_Q_Additions, AX, Q, .keep_all = T)
 
 
 ND_Gamma <- read_csv("Dependencies/ND_Gamma_NEW.csv")
 #ND_Gamma <- filter(ND_Gamma, Mult_Cleaner != "E0")
 #Wap <- read.csv(Wins_all_location_save_allOcc)
 Wap_Q0 <- read.csv(Wins_all_location_save_allQ)
+#Wap_Q0$Ee_eff <- Wap_Q0$Q - Wap_Q0$Ebind_mean
+Wap_Q0 <- bind_rows(Wap_Q0, Wap_Q_Additions)
 Wap_Q0$Ee_eff <- Wap_Q0$Q - Wap_Q0$Ebind_mean
+
 Wap_Q <- filter(Wap_Q0, Type != "Large_L", !is.na(Rate_Pl_tot), !is.na(Rate_EBIT_tot)) %>%
   arrange(desc(Rate_Pl_tot))
 Wap_Q$Ee_eff <- Wap_Q$Q - Wap_Q$Ebind_mean
@@ -63,6 +68,7 @@ facility <-  arrange(facility, Irradiance_Wcm2um2)
 #wap0 <- read_csv("App_Data/All_RatesCalcd_Viva.csv")
 wap0 <- bind_rows(wap_AllOcc_0_99, wap_AllOcc_100_200 )
 wap0 <- bind_rows(wap0, Wap_AllOcc_Additions)
+wap0 <- bind_rows(wap0, wap_AllOcc_200_300)
 wap0$Rate_Pl <- wap0$Rate_Pl_tot
 wap0$S <- wap0$Sp*wap0$m
 wap0$Npw_Pl_S <- double(1)
@@ -121,10 +127,11 @@ ui <- fluidPage(
              ## tabPanel("name", content)
              tabPanel("Find Transition",
                       p("Use this tab to find a nuclear transition you want to study. Note that transitions are sorted in decreasing order of the upper-limit plasma rate. You will find this variable towards the right by using the horizontal scroll bar at the bottom."),
-                      p("You should display 100 results per page and click on the transition you are interested in to assist with studying the data. The effective energy is in the far right column and should be taken as a reasonable estimate of the optimum temperature. Note the optimiser on tab 3 works well for Z<80 and Te<100keV. More CSD data will be added to improve these limits. You may find candidates suggested in literature and not on this list - this will be because the lifetime of the upper level is not yet in the ENSDF database - the lifetime must be known for its detectable fraction to be calculated"),
-                      p("You can use the search bar on the right to search for a specific nuclide, ensure the element is in caps Eg. 178HF. You should search for a specific nuclide to make sense of the different transitions for a nuclide that has many viable NEEC transitions of similar energy (sometimes there are very similar values of the same transitions which come from the raw ENSDF database). Also if your calculation is throwing up a lot of errors in tab 3 you should use the search bar on this tab to find the corresponding transition in this table - most likely you will find it is a low Ar and not worth considering"),
+                      p("You should display 100 results per page and click on the transition you are interested in to assist with studying the data. The effective energy is in the far right column and should be taken as a reasonable estimate of the optimum temperature. Note the optimiser on tab 3 works well for Z<80 and Te<100keV. More CSD data will be added to improve these limits. You may find candidates suggested in literature and not on this list - this will be because the lifetime of the upper level is not yet in the ENSDF database - the lifetime must be known for its detectable fraction to be calculated."),
+                      p("You can use the search bar on the right to search for a specific nuclide, ensure the element is in caps Eg. 178HF. You should search for a specific nuclide to make sense of the different transitions for a nuclide that has many viable NEEC transitions of similar energy (sometimes there are very similar values of the same transitions which come from the raw ENSDF database). Also if your calculation is throwing up a lot of errors in tab 3 you should use the search bar on this tab to find the corresponding transition in this table - most likely you will find it is a low Ar and not worth considering."),
                       p("You may sort by any variable by clicking on the tiny arrows next to the variable. Click again or on the other arrow if it sorts in the wrong order."),
-                      p("Filter by a range of electron impact energies below, and also use the self-explanatory tick boxes"),
+                      p("Please contact the app author with any questions on ben.wallis@york.ac.uk. The NEEC database uses the ENSDF, NIST, BRICC, FLYCHK database tools and the Atlas of Nuclear Isomers and the author acknowledges this as the source of all raw data. The data is correct as of Sept 2021."),
+                      
                       
                 
                       # sidebarPanel(
@@ -145,7 +152,7 @@ ui <- fluidPage(
                       #)   
              ),
              tabPanel("Guess Matrix Element",
-                      p("This tab is to assist you to make a good guess of a reduced transition probability (B-Value) by using all the known B-values in the ENSDF database."),
+                      p("This tab is to assist you to make a good guess of a reduced transition probability (B-Value), for a transition which has an unknown B-value, by using all the known B-values in the ENSDF database."),
                       p("Wait a moment for the plot to load. Double-Click (rapidly) on a multipolarity in the legend in order to select just that multipolarity. You may also filter by a specific mass number if you wish, in the box below. If there is enough data available upon filtering, then you should look for a B-value that corresponds to a gamma energy of the Q of interest (Q is the nuclear excitation energy)."),
                       p("Hovering over a point will tell you which nuclide this B-value comes from."),
                       
@@ -158,9 +165,9 @@ ui <- fluidPage(
                       sidebarPanel(
                         p("Figure out what it is you need to calculate, set up the correct parameters in the boxes and sliders. 
                           Then click GO. Once you have generated the data with GO (see the summed rate or yield displayed on the second graph), you can then click OPTIMISE TEMPERATURE (button located below the second slider). If you have pressed GO or OPTIMISE TEMPERATURE once then you should refresh the app, before choosing a new candidate / change parameters."),
-                        p("ne, Te_max and repetition rate are defined by the facility unless 'Astrophysical' input selected; then the calculation should only be run for Rate output only. Rates are always per ion per second. Number output is the NEEC yield per ion in the plasma defined by the laser parameters"),
+                        p("ne, Te_max and repetition rate are defined by the facility unless 'Astrophysical' input selected; then the calculation should only be run for Rate output only. Rates are always per ion per second. Number output is the NEEC yield per ion in the plasma defined by the laser parameters."),
                         p("All plots are interactive. See the tool bar at the top of each plot to assist with studying the data"),
-                        p("Note: can take several minutes to calculate NEEC rates and produce plots. If running Te optimisation will take ~10m, longer for high Z. Once you've clicked OPTIMISE TEMPERATURE just leave it and wait for the loading bar to fill. Have a cup of coffee. The black data on the 3D plot shows the effective energy which is an estimate of the optimal Te for NEEC. Click the download button to download a .csv of the ne,Te,Rate data once OPTIMISE TEMPERATURE has run; this will be for astrophysical calculation or to use with your hydrodynamic simulation of small volumes and thus {ne,Te}'s"),
+                        p("Note: can take several minutes to calculate NEEC rates and produce plots. If running Te optimisation will take ~10m, longer for high Z. Once you've clicked OPTIMISE TEMPERATURE just leave it and wait for the loading bar to fill. Have a cup of coffee. The black data on the 3D plot shows the effective energy which is an estimate of the optimal Te for NEEC. Click the download button to download a .csv of the ne,Te,Rate data once OPTIMISE TEMPERATURE has run; this will be for astrophysical calculation or to use with your hydrodynamic simulation of small volumes and thus {ne,Te}'s."),
                         p("You may see errors displayed on the page, but as long as you see a loading bar and then some plots - error messages can be ignored. If you dont get any plots at all after clicking Go then it is likely the transition rate is too negligible - check this against the data in tab 1."),
                         p("If you want to have a look for a good B-value then do that before pressing OPTIMISE TEMPERATURE. B-values are not plotted if the OPTIMISE TEMPERATURE is running."),
                         p("WARNING: If you are looking at Te>100keV then you should assess the rates with caution. A rate or yield above this temperature assumes the ion is fully stripped and this may not be necessarily the case for high Z... this would present a several orders of magnitude overestimate, whereas below 100keV the accuracy is well within an order of magnitude. You should also assess with caution candidates where Q>100keV. Always refer to the data you've searched in tab 1 if you are confused."),
@@ -831,7 +838,10 @@ observeEvent(input$Optimise, {
     }
     
     
-    plot_ly(data=N_out, x = ~Te, y= ~ne,  z = ~N_count, type="scatter3d", mode = 'markers', marker=list(size=3, color="red"), showlegend=F) %>%
+    plot_ly(data=N_out, x = ~Te, y= ~ne,  z = ~N_count, type="scatter3d", mode = 'markers', marker=list(size=3, color="red"), showlegend=F, 
+      hovertemplate = paste('<i>ne</i>: %{y}',
+                          '<br>Te<b></b>: %{x}<br>',
+                           '<b>Rate = %{z}</b>')) %>%
       layout(scene=list(
         xaxis=list(type="log", title="Temperature (keV)", exponentformat = "E"),
         yaxis=list(type = "log", title="Electron Number Density (cm^{-3})", exponentformat = "E"),

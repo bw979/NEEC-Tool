@@ -39,35 +39,35 @@ for(i in 1:length(facility$Power_W)){
   
   
   # ############ CHECKING AGAINST GUNST  ###################
-  # Z <- 42
-  # M <- 93
-  # f<-0.2
-  # Te_eV <-  facility$Te_chosen_keV[i]*1000
-  # Epulse_eV <- Epulse_J / e
-  # Z_ave <- Z/2
-  # mi_eV_c2 <- (Z*mp + ( (M - Z) *mn ) + (Z_ave * me))
+   Z <- 42
+   M <- 93
+   f<-0.5
+   Te_eV <-  facility$Te_chosen_keV[i]*1000
+   Epulse_eV <- Epulse_J / e
+   Z_ave <- Z/2
+  mi_eV_c2 <- (Z*mp + ( (M - Z) *mn ) + (Z_ave * me))
   # #mi_Kg <- mi_eV_c2 * e / (c^2)
   # #plasma lifetime
   # 
   # 
   # 
-  # ##to get elec number density
-  # Ne <- f*Epulse_eV / Te_eV 
-  # dp <- c*100*tlaser_s #cm
-  # Vp <- pi*((1E2*Rfocal_m)^2)*dp #cm^3
-  # ne <- Ne/Vp ## e's cm^-3
-  # 
-  # facility$Ne[i] <- Ne
-  # ### THIS IS IN mc^-1 you idiot need to convert to s by diving by c
-  # tp <- Rfocal_m *(1/c)*sqrt(mi_eV_c2 / (Te_eV * Z_ave)) #s
-  # 
-  # facility$tp[i] <- tp
-  # facility$ne[i] <- Ne/Vp
+  ##to get elec number density
+  Ne <- f*Epulse_eV / Te_eV
+  dp <- c*100*tlaser_s #cm
+  Vp <- pi*((1E2*Rfocal_m)^2)*dp #cm^3
+  ne <- Ne/Vp ## e's cm^-3
+  
+  facility$Ne[i] <- Ne
+  ### THIS IS IN mc^-1 you idiot need to convert to s by diving by c
+  tp <- Rfocal_m *(1/c)*sqrt(mi_eV_c2 / (Te_eV * Z_ave)) #s
+
+  facility$tp[i] <- tp
+  facility$ne[i] <- Ne/Vp
   ############ CHECKING AGAINST GUNST  ###################
   facility <- facility[order(facility$Te_chosen_keV),]
 }
-# if(!file.exists("Dependencies/Laser_Facilities/Big_Facilities_Irradiances_TeCalcd.csv")){
-#   write.table(facility, file="Dependencies/Laser_Facilities/Big_Facilities_Irradiances_TeCalcd.csv", append=T, row.names=F, col.names=T,  sep=",")
-# }
+if(!file.exists("Dependencies/Laser_Facilities/Big_Facilities_Irradiances_TeCalcd.csv")){
+  write.table(facility, file="Dependencies/Laser_Facilities/Big_Facilities_Irradiances_TeCalcd.csv", append=T, row.names=F, col.names=T,  sep=",")
+}
 
 
