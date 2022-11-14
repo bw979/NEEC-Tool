@@ -27,6 +27,7 @@ Wap_Q_Additions <- distinct(Wap_Q_Additions, AX, Q, .keep_all = T)
 
 ND_Gamma <- read_csv("Dependencies/ND_Gamma_NEW.csv")
 #ND_Gamma <- filter(ND_Gamma, Mult_Cleaner != "E0")
+ND_Gamma <- filter(ND_Gamma, Mult_Cleaner != "E0")
 #Wap <- read.csv(Wins_all_location_save_allOcc)
 Wap_Q0 <- read.csv(Wins_all_location_save_allQ)
 #Wap_Q0$Ee_eff <- Wap_Q0$Q - Wap_Q0$Ebind_mean
@@ -59,7 +60,7 @@ Wap_Q$m <- signif(Wap_Q$m,3)
 
 #WapTable <- select(wap,-Ji_double, -Jf_double, -Thi_numeric, -Thf_numeric, -M, -El, -N, -Egam, -FL) 
 WapTable <- select(Wap_Q,-Ji_double, -Jf_double, -Thi_numeric, -Thf_numeric, -M, -El, -N, -Egam, -FL, -Occ, -At_GS_Config, -subshell, -Jat, -Ebind, -Ee, -Ebeam, -Efeed,
-                   -Btype, -MIX_type, -B2type, -B2, -Sp, -ICC_p, -Type_Good) 
+                   -Btype, -MIX_type, -B2type, -B2, -Sp, -ICC_p, -Type_Good, -Mult) 
 
 #facility <- filter(facility, Facility != c("XFELO", "SACLA", "EurXFEL", "LCLS")) %>%
 facility <-  arrange(facility, Irradiance_Wcm2um2)
@@ -130,7 +131,7 @@ ui <- fluidPage(
                       p("You should display 100 results per page and click on the transition you are interested in to assist with studying the data. The effective energy is in the far right column and should be taken as a reasonable estimate of the optimum temperature. Note the optimiser on tab 3 works well for Z<80 and Te<100keV. More CSD data will be added to improve these limits. You may find candidates suggested in literature and not on this list - this will be because the lifetime of the upper level is not yet in the ENSDF database - the lifetime must be known for its detectable fraction to be calculated."),
                       p("You can use the search bar on the right to search for a specific nuclide, ensure the element is in caps Eg. 178HF. You should search for a specific nuclide to make sense of the different transitions for a nuclide that has many viable NEEC transitions of similar energy (sometimes there are very similar values of the same transitions which come from the raw ENSDF database). Also if your calculation is throwing up a lot of errors in tab 3 you should use the search bar on this tab to find the corresponding transition in this table - most likely you will find it is a low Ar and not worth considering."),
                       p("You may sort by any variable by clicking on the tiny arrows next to the variable. Click again or on the other arrow if it sorts in the wrong order."),
-                      p("Please contact the app author with any questions on ben.wallis@york.ac.uk. The NEEC database uses the ENSDF, NIST, BRICC, FLYCHK database tools and the Atlas of Nuclear Isomers and the author acknowledges this as the source of all raw data. The data is correct as of Sept 2021."),
+                      p("Please contact the app author with any questions on ben.wallis@york.ac.uk. The NEEC database uses the ENSDF, NIST, BRICC, FLYCHK database's and tools and the Atlas of Nuclear Isomers and the author acknowledges this as the source of all raw data. The data is correct as of Sept 2021."),
                       
                       
                 
