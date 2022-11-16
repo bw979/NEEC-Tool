@@ -19,6 +19,7 @@ Wins_all_location_save_allQ <- "Wap_AllQ3_PlasmaEBIT_NoMixing_CorrectedSubmissio
 wap_AllOcc_0_99 <- read_csv("Wap_AllOcc_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
 wap_AllOcc_100_200 <- read_csv("Wap_AllOcc_Ee100_Ee200_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
 wap_AllOcc_200_300 <- read_csv("Wap_AllOcc_Ee200_Ee300_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
+wap_AllOcc_300_400 <- read_csv("Wap_AllOcc_Ee300_Ee400_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
 Wap_AllOcc_Additions <- read_csv("Wap_AllOcc_AdditionalData.csv")
 Wap_AllOcc_Additions <- filter(Wap_AllOcc_Additions, !is.na(Sp))
 Wap_Q_Additions <- arrange(Wap_AllOcc_Additions, M, Z, Occ )
@@ -70,6 +71,7 @@ facility <-  arrange(facility, Irradiance_Wcm2um2)
 wap0 <- bind_rows(wap_AllOcc_0_99, wap_AllOcc_100_200 )
 wap0 <- bind_rows(wap0, Wap_AllOcc_Additions)
 wap0 <- bind_rows(wap0, wap_AllOcc_200_300)
+wap0 <- bind_rows(wap0, wap_AllOcc_300_400)
 wap0$Rate_Pl <- wap0$Rate_Pl_tot
 wap0$S <- wap0$Sp*wap0$m
 wap0$Npw_Pl_S <- double(1)
