@@ -13,7 +13,7 @@ n_index <- read_csv("Dependencies/n_to_ICshell_Conversion.csv")
 atomic_colours <- read_csv("Dependencies/Atomic_Colours.csv")
 
 
-##### LOAD the corrected submission data - this has B WE's but needs a mixing calculation and maybe a wrangle of mixing typeWins_all_location_save <- "Wap_AllQ_PlasmaEBIT_NoMixing_CorrectedSubmission2022.csv"
+##### LOAD the corrected submission data - this has B WE's but needs a mixing calculation and maybe a wrangle of mixing type Wins_all_location_save <- "Wap_AllQ_PlasmaEBIT_NoMixing_CorrectedSubmission2022.csv"
 Wins_all_location_save_allQ <- "Wap_AllQ3_PlasmaEBIT_NoMixing_CorrectedSubmission2022.csv"
 #Wins_all_location_save_allOcc <- "Wap_AllOcc_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv"
 wap_AllOcc_0_99 <- read_csv("Wap_AllOcc_PlasmaEBIT_NoMixingCalc_CorrectedSubmission2022.csv")
@@ -181,7 +181,7 @@ ui <- fluidPage(
                         #selectInput("In_Type", "Input Type:", choices=c("Astro", "Facility"), selected="Astro"),
                         
                         # submit button
-                        actionButton("Go", label = "Go"),#
+                        actionButton("Go", label = "GO", style="color: #fff; background-color: #e95420; border-color: #c34113; border-radius: 10px; border-width: 2px"),#
                         
                         
                         
@@ -219,7 +219,7 @@ ui <- fluidPage(
                         #                     "Ground_State" = "gs"),
                         #                    selected = "gs"
                         #)
-                        actionButton("Optimise", label = "OPTIMISE TEMPERATURE"),
+                        actionButton("Optimise", label = "OPTIMISE TEMPERATURE", style="color: #fff; background-color: #e95420; border-color: #c34113; border-radius: 10px; border-width: 2px"),
                         downloadButton("downloadData", "Download {Te,ne} - Rate data"),
                         
                         #DT::dataTableOutput("IsoInfo") 
