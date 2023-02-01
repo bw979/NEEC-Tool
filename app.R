@@ -133,10 +133,8 @@ ui <- fluidPage(
                       p("You should display 100 results per page and click on the transition you are interested in to assist with studying the data. The effective energy is in the far right column and should be taken as a reasonable estimate of the optimum temperature. Note the optimiser on tab 3 works well for Z<80 and Te<100keV. More CSD data will be added to improve these limits. You may find candidates suggested in literature and not on this list - this will be because the lifetime of the upper level is not yet in the ENSDF database - the lifetime must be known for its detectable fraction to be calculated."),
                       p("You can use the search bar on the right to search for a specific nuclide, ensure the element is in caps Eg. 178HF. You should search for a specific nuclide to make sense of the different transitions for a nuclide that has many viable NEEC transitions of similar energy (sometimes there are very similar values of the same transitions which come from the raw ENSDF database). Also if your calculation is throwing up a lot of errors in tab 3 you should use the search bar on this tab to find the corresponding transition in this table - most likely you will find it is a low Ar and not worth considering."),
                       p("You may sort by any variable by clicking on the tiny arrows next to the variable. Click again or on the other arrow if it sorts in the wrong order."),
-                      p("Please contact the app author with any questions on ben.wallis@york.ac.uk. The NEEC database uses the ENSDF, NIST, BRICC, FLYCHK database's and tools and the Atlas of Nuclear Isomers and the author acknowledges this as the source of all raw data. The data is correct as of Sept 2021."),
+                      p("Please contact the app author with any questions on ben.wallis@york.ac.uk. The NEEC table provides a relational database formed of the ENSDF [1], NIST [2], BRICC [3], FLYCHK [4] database's and tools and the Atlas of Nuclear Isomers [5], and the author acknowledges this as the source of all raw data. Full instructions on the database design and how the results are calculated are provided in [6]. The raw data is correct as of Sept 2021."),
                       
-                      
-                
                       # sidebarPanel(
                       #   sliderInput(inputId = "energy0",label = "Max Impact Energy (keV)", value = 5000, min = 1, max = 5000)
                       # ),   
@@ -148,7 +146,15 @@ ui <- fluidPage(
                       ## PLot output
                       #plotOutput(outputId = "MasterPlot"), 
                       ## Data Table output
-                      DT::dataTableOutput("MasterTable"),  
+                      DT::dataTableOutput("MasterTable"),
+                      p("Raw Data sources: "),
+                      p("[1] Entire ENSDF database as of Sept 1st 2021. URL: http://www.nndc.bnl.gov/ensarchivals/."),
+                      p("[2] NIST Atomic Spectra Database, 2020. URL: https://www.nist.gov/pml/atomic-spectra-database."),
+                      p("[3] T. Kibédi et al. “Evaluation of theoretical conversion coefficients using BrIcc”. In: Nuclear Instruments and Methods in Physics Research, Section A: Accelerators, Spectrometers, Detectors and Associated Equipment 589.2 (May 2008), pp. 202–229. ISSN:01689002."),
+                      p("[4] H K Chung et al. FLYCHK 2008"),
+                      p("[5] Ashok Kumar Jain et al. “Atlas of Nuclear Isomers”. In: Nuclear Data Sheets 128 (2015), pp. 1–130. ISSN: 00903752. DOI: 10.1016/j.nds.2015.08.001. URL:http://dx.doi.org/10.1016/j.nds.2015.08.001"),
+                      p("[6] Benjamin Wallis, PhD Thesis, University of York 2022"),  
+                      p("The following is a compiled list of high-power laser facilities which can be used as a precurser to experimental design via tab 3. The data is extracted from the website of each facility itself."),  
                       DT::dataTableOutput("FACILITY")
                       
                       #tableOutput("MasterTable")  
